@@ -1,4 +1,4 @@
-package com.subrato.packages.solace_app.config;
+package com.subrato.packages.solace.RequestReplyDemo.config;
 
 import com.solacesystems.jcsmp.JCSMPException;
 import com.solacesystems.jcsmp.JCSMPFactory;
@@ -7,7 +7,7 @@ import com.solacesystems.jcsmp.JCSMPStreamingPublishEventHandler;
 import com.solacesystems.jcsmp.TextMessage;
 import com.solacesystems.jcsmp.Topic;
 import com.solacesystems.jcsmp.XMLMessageProducer;
-import com.subrato.packages.solace_app.pojos.PublishResponse;
+import com.subrato.packages.solace.RequestReplyDemo.pojo.PublishResponse;
 
 public class Publisher {
 

@@ -1,4 +1,4 @@
-package com.subrato.packages.solace_app.config;
+package com.subrato.packages.solace.RequestReplyDemo.config;
 
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
