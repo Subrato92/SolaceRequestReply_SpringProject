@@ -6,7 +6,6 @@ public class InitializerPayload {
     private String password;
     private String host;
     private String vpn;
-    private String queue;
 
     public String getUserName() {
         return userName;
@@ -23,24 +22,14 @@ public class InitializerPayload {
     public String getHost() {
         return host;
     }
-
     public void setHost(String host) {
         this.host = host;
     }
-
     public String getVpn() {
         return vpn;
     }
-
     public void setVpn(String vpn) {
         this.vpn = vpn;
     }
 
-    public String getQueue() {
-        return queue;
-    }
-
-    public void setQueue(String queue) {
-        this.queue = queue;
-    }
 }
