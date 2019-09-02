@@ -2,32 +2,39 @@ package com.subrato.packages.solace.RequestReplyDemo.config;
 
 import com.solacesystems.jcsmp.*;
 import com.subrato.packages.solace.RequestReplyDemo.pojo.InitializerPayload;
+import com.subrato.packages.solace.RequestReplyDemo.pojo.RequestorReplierPayload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.CountDownLatch;
 
 public class SolaceReplier {
 
     private MessageRouter router = null;
-
     private XMLMessageProducer producer = null;
     private XMLMessageConsumer cons = null;
-
+    private boolean isActive = false;
     private CountDownLatch latch = null;
     private Topic topic = null;
     private Logger log = LoggerFactory.getLogger(SolaceReplier.class);
 
-    public SolaceReplier(InitializerPayload payload, String topicRef){
-        router = new MessageRouter(payload);
-        String sessionStatus = router.connect();
+    public SolaceReplier(RequestorReplierPayload payload){
+        if(payload.getPropertiesPayload() != null) {
+            router = new MessageRouter(payload.getPropertiesPayload());
+            String sessionStatus = router.connect();
+            isActive = true;
+            latch = new CountDownLatch(1);
+        }
 
-        topic = JCSMPFactory.onlyInstance().createTopic(topicRef);
-    }
+        if( payload.getTopicName() != null ) {
+            topic = JCSMPFactory.onlyInstance().createTopic(payload.getTopicName());
+        }
 
-    public void initialize(){
-        initializeProducer();
-        initializeConsumer();
+        if( isActive ) {
+            initializeProducer();
+            initializeConsumer();
+        }
     }
 
     private void initializeProducer(){
@@ -50,17 +57,27 @@ public class SolaceReplier {
 
     }
 
+    //Initialized to produce Auto-Reply
     private void initializeConsumer(){
 
         try {
             cons = router.getSession().getMessageConsumer(new XMLMessageListener() {
+
                 @Override
                 public void onReceive(BytesXMLMessage request) {
                     if (request.getReplyTo() != null) {
                         TextMessage reply = JCSMPFactory.onlyInstance().createMessage(TextMessage.class);
-                        String text = "Sample response";
+                        String text;
+                        if (request instanceof TextMessage){
+                            text = "[HEADER] Message Received on " + LocalDateTime.now().toString() + "\n" +
+                                    "[MESSAGE]" + ((TextMessage)request).getText() ;
+                        }else{
+                            text = "[HEADER] Message Received on " + LocalDateTime.now().toString() + "\n" +
+                                    "[MESSAGE]" + request.dump() ;
+                        }
                         reply.setText(text);
                         try {
+                            //--- Exchange of Message
                             producer.sendReply(request, reply);
                         } catch (JCSMPException e) {
                             System.out.println("Error sending reply.");
@@ -98,7 +115,27 @@ public class SolaceReplier {
             System.out.println("I was awoken while waiting");
         }
 
+    }
 
+    public void reset(){
+        if( router != null ) {
+            router.killSession();
+            router = null;
+        }
+
+        if( producer!=null ) {
+            producer.close();
+            producer = null;
+        }
+
+        if( cons != null ) {
+            cons.close();
+            cons = null;
+        }
+
+        isActive = false;
+        latch = null;
+        topic = null;
     }
 
 

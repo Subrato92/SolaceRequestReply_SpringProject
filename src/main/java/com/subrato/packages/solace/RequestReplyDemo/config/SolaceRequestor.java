@@ -1,8 +1,10 @@
 package com.subrato.packages.solace.RequestReplyDemo.config;
 
 import com.solacesystems.jcsmp.*;
-import com.subrato.packages.solace.RequestReplyDemo.pojo.RequestorPayload;
+import com.subrato.packages.solace.RequestReplyDemo.pojo.RequestorReplierPayload;
 import com.subrato.packages.solace.RequestReplyDemo.pojo.TransmitterResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SolaceRequestor {
 
@@ -13,7 +15,9 @@ public class SolaceRequestor {
     private TextMessage textMessage = null;
     private Topic topic = null;
 
-    public SolaceRequestor(RequestorPayload payload){
+    Logger log = LoggerFactory.getLogger(SolaceRequestor.class);
+
+    public SolaceRequestor(RequestorReplierPayload payload){
         if(payload.getPropertiesPayload() != null) {
             router = new MessageRouter(payload.getPropertiesPayload());
             router.connect();
@@ -51,7 +55,9 @@ public class SolaceRequestor {
                 }
             });
         } catch (JCSMPException e) {
-            e.printStackTrace();
+            log.info("[Exception] @ProducerInitialization : " +e.getMessage());
+            routerActive = false;
+            router = null;
         }
 
     }
@@ -65,7 +71,9 @@ public class SolaceRequestor {
             consumer = router.getSession().getMessageConsumer((XMLMessageListener)null);
             consumer.start();
         } catch (JCSMPException e) {
-            e.printStackTrace();
+            log.info("[Exception] @ConsumerInitialization : " +e.getMessage());
+            routerActive = false;
+            router = null;
         }
     }
 
@@ -82,6 +90,7 @@ public class SolaceRequestor {
         }
 
         try {
+            //--- Exchange of Message
             Requestor requestor = router.getSession().createRequestor();
             reply = requestor.request(textMessage, timeoutMs, topic);
             status = true;
@@ -92,7 +101,7 @@ public class SolaceRequestor {
         }
 
         if(status) {
-            return new TransmitterResponse(status, log, reply.toString());
+            return new TransmitterResponse(status, reply.dump(), reply);
         }
 
         return new TransmitterResponse(status, log, null);

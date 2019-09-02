@@ -1,6 +1,6 @@
 package com.subrato.packages.solace.RequestReplyDemo.pojo;
 
-public class RequestorPayload {
+public class RequestorReplierPayload {
 
     private InitializerPayload propertiesPayload;
     private String topicName;
