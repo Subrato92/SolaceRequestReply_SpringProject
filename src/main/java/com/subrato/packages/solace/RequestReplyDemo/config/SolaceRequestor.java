@@ -36,9 +36,6 @@ public class SolaceRequestor {
     }
 
     private void initializeProducer(){
-        if(!routerActive){
-            return;
-        }
 
         try {
             producer = router.getSession().getMessageProducer(new JCSMPStreamingPublishEventHandler() {
@@ -58,19 +55,24 @@ public class SolaceRequestor {
             log.info("[Exception] @ProducerInitialization : " +e.getMessage());
             routerActive = false;
             router = null;
+        } catch (NullPointerException e){
+            log.info("[Exception] @ProducerInitialization : " +e.getMessage());
+            routerActive = false;
+            router = null;
         }
 
     }
 
     private void initializeConsumer(){
-        if(!routerActive){
-            return;
-        }
 
         try {
             consumer = router.getSession().getMessageConsumer((XMLMessageListener)null);
             consumer.start();
         } catch (JCSMPException e) {
+            log.info("[Exception] @ConsumerInitialization : " +e.getMessage());
+            routerActive = false;
+            router = null;
+        } catch (NullPointerException e){
             log.info("[Exception] @ConsumerInitialization : " +e.getMessage());
             routerActive = false;
             router = null;

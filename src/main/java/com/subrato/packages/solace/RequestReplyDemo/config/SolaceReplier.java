@@ -52,7 +52,13 @@ public class SolaceReplier {
                 }
             });
         } catch (JCSMPException e) {
-            e.printStackTrace();
+            log.info("[Exception] @ProducerInitialization : " +e.getMessage());
+            isActive = false;
+            router = null;
+        } catch (NullPointerException e){
+            log.info("[Exception] @ProducerInitialization : " +e.getMessage());
+            isActive = false;
+            router = null;
         }
 
     }
@@ -95,16 +101,26 @@ public class SolaceReplier {
                 }
             });
         } catch (JCSMPException e) {
-            e.printStackTrace();
+            log.info("[Exception] @ConsumerInitialization : " +e.getMessage());
+            isActive = false;
+            router = null;
+        } catch (NullPointerException e){
+            log.info("[Exception] @ConsumerInitialization : " +e.getMessage());
+            isActive = false;
+            router = null;
         }
 
         try {
             router.getSession().addSubscription(topic);
             cons.start();
 
-            System.out.println("Connected. Awaiting message...");
+            log.info("Connected. Awaiting message...");
         } catch (JCSMPException e) {
-            System.out.println("[Replier Connection Failed to Start]... " + e.getMessage());
+            log.info("[Exception] Replier Connection Failed to Start... " + e.getMessage());
+        } catch (NullPointerException e){
+            log.info("[Exception] @TopicSubscription : " +e.getMessage());
+            isActive = false;
+            router = null;
         }
 
 
@@ -112,7 +128,7 @@ public class SolaceReplier {
         try {
             latch.await(); // block here until message received, and latch will flip
         } catch (InterruptedException e) {
-            System.out.println("I was awoken while waiting");
+            log.info("I was awoken while waiting");
         }
 
     }

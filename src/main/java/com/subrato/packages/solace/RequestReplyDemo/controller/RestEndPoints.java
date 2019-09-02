@@ -56,12 +56,17 @@ public class RestEndPoints {
     public @ResponseBody TransmitterResponse sendMessage(@RequestBody String message){
 
         if( requestor == null ){
-            return new TransmitterResponse(false, "Instances are not initialized", null);
+            return new TransmitterResponse(false, "Instances are not initialized. Apply reset.", null);
         }
 
         TransmitterResponse response = requestor.transmitter(message);
+
         log.info("ReplyText:{}",response.getReplyText());
-        log.info(response.getReplyBody().toString());
+        if(response.getReplyBody() != null) {
+            log.info("ReplyBody :" +response.getReplyBody().toString());
+        }else{
+            log.info("ReplyBody : null");
+        }
 
         return response;
     }
@@ -83,7 +88,7 @@ public class RestEndPoints {
             replier = null;
         }
 
-        return new StringResponse("Instance Killed...", true);
+        return new StringResponse("Instance(s) Killed...", true);
     }
 
 }
